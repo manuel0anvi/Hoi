@@ -32,21 +32,27 @@ def main():
     print("All dependencies installed! Starting script...")
     print("="*50 + "\n")
     
-    # Import and run the main virus script
+    # Run the main virus script
     try:
         # Get the directory where this launcher is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
         virus_script = os.path.join(script_dir, 'virus.py')
         
-        # Execute the virus.py script
-        with open(virus_script, 'r', encoding='utf-8') as f:
-            code = f.read()
-        exec(code)
-    except FileNotFoundError:
-        print("Error: virus.py not found in the same directory!")
-        sys.exit(1)
+        if not os.path.exists(virus_script):
+            print("Error: virus.py not found in the same directory!")
+            sys.exit(1)
+            
+        # Run virus.py as a separate process using the same python executable
+        # This is safer than exec() as it avoids scope issues with imports
+        subprocess.check_call([sys.executable, virus_script])
+        
+    except subprocess.CalledProcessError as e:
+        # Child process failed
+        sys.exit(e.returncode)
+    except KeyboardInterrupt:
+        pass
     except Exception as e:
-        print(f"Error running script: {e}")
+        print(f"Unexpected error: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
